@@ -1,12 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
 import secrets
+import math
 import string
 
 class PasswordGeneratorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Password Generator")
+        self.root.title("Password Generator x)")
 
         self.length_var = tk.IntVar(value=12)
         self.upper_var = tk.BooleanVar(value=True)
@@ -15,7 +16,7 @@ class PasswordGeneratorApp:
         self.special_var = tk.BooleanVar(value=True)
 
         self.create_widgets()
-
+        #tkinter has such an ugly gui. reminder to research how to make it not bad without actually having to do design
     def create_widgets(self):
         # Length Label and Entry
         length_label = ttk.Label(self.root, text="Password Length:")
@@ -45,6 +46,10 @@ class PasswordGeneratorApp:
         self.password_var = tk.StringVar()
         password_label = ttk.Label(self.root, textvariable=self.password_var)
         password_label.grid(row=4, column=0, columnspan=2, pady=5)
+        # entropy checker ;0
+        self.entropy_var = tk.StringVar()
+        entropy_label = ttk.Label(self.root, textvariable=self.entropy_var)
+        entropy_label.grid(row=5, column=0, columnspan=2, pady=5)
 
     def generate_password(self):
         selected_chars = ""
@@ -55,11 +60,15 @@ class PasswordGeneratorApp:
         if self.digit_var.get():
             selected_chars += string.digits
         if self.special_var.get():
-            selected_chars += string.punctuation
-
+            selected_chars += string.punctuation    
         if not selected_chars:
             self.password_var.set("Please select at least one character type.")
+            self.entropy_var.set("")
             return
+
+        num_combinations = len(selected_chars) ** self.length_var.get()
+        entropy_bits = math.log2(num_combinations)
+        self.entropy_var.set(f"Entropy: {entropy_bits:.2f} bits")
 
         password = ''.join(secrets.choice(selected_chars) for _ in range(self.length_var.get()))
         self.password_var.set(password)

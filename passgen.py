@@ -8,7 +8,7 @@ class PasswordGeneratorApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Password Generator")
-        self.root.geometry("800x600")
+        self.root.geometry("350x400")
         self.center_window()
 
         self.length_var = tk.IntVar(value=12)
@@ -24,10 +24,10 @@ class PasswordGeneratorApp:
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
 
-        x = (screen_width - 800) // 2
-        y = (screen_height - 600) // 2
+        x = (screen_width - 350) // 2
+        y = (screen_height - 400) // 2
 
-        self.root.geometry(f"800x600+{x}+{y}")
+        self.root.geometry(f"350x400+{x}+{y}")
 
     def create_widgets(self):
         # Container Frame
@@ -63,18 +63,27 @@ class PasswordGeneratorApp:
         generate_button.grid(row=4, column=0, columnspan=2, pady=10)
         self.add_tooltip(generate_button, "Click to generate a secure password")
 
-        # Password Entry Field
-        password_entry = ttk.Entry(container, show="", state="readonly", font=("Courier", 12))
-        password_entry.grid(row=5, column=0, columnspan=2, pady=10, padx=5, sticky="we")
+         # Password Entry Field
+        password_entry = ttk.Entry(container, show="*", state="readonly", font=("Courier", 14))  # Increased font size
+        password_entry.grid(row=5, column=0, columnspan=2, pady=10, padx=5, sticky="we", ipady=10)  # Increased ipady for height
         self.password_var = tk.StringVar()
         password_entry["textvariable"] = self.password_var
-
 
         # Display Label for Entropy
         self.entropy_var = tk.StringVar()
         entropy_label = ttk.Label(container, textvariable=self.entropy_var, foreground="gray")
         entropy_label.grid(row=6, column=0, columnspan=2, pady=5)
 
+        # Copy Password Button
+        copy_button = ttk.Button(container, text="Copy Password", command=self.copy_password)
+        copy_button.grid(row=7, column=0, columnspan=2, pady=10)
+
+    def copy_password(self):
+        # Function to copy the generated password to the clipboard
+        self.root.clipboard_clear()
+        self.root.clipboard_append(self.password_var.get())
+        self.root.update()
+        
     def generate_password(self):
         selected_chars = ""
         if self.upper_var.get():

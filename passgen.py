@@ -1,13 +1,15 @@
 import tkinter as tk
 from tkinter import ttk
 import secrets
-import math
 import string
+import math
 
 class PasswordGeneratorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Password Generator x)")
+        self.root.title("Password Generator")
+        self.root.geometry("800x600")
+        self.center_window()
 
         self.length_var = tk.IntVar(value=12)
         self.upper_var = tk.BooleanVar(value=True)
@@ -16,40 +18,62 @@ class PasswordGeneratorApp:
         self.special_var = tk.BooleanVar(value=True)
 
         self.create_widgets()
-        #tkinter has such an ugly gui. reminder to research how to make it not bad without actually having to do design
-    def create_widgets(self):
-        # Length Label and Entry
-        length_label = ttk.Label(self.root, text="Password Length:")
-        length_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+        self.tooltip = None
 
-        length_entry = ttk.Entry(self.root, textvariable=self.length_var)
-        length_entry.grid(row=0, column=1, padx=10, pady=5, sticky="w")
+    def center_window(self):
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+
+        x = (screen_width - 800) // 2
+        y = (screen_height - 600) // 2
+
+        self.root.geometry(f"800x600+{x}+{y}")
+
+    def create_widgets(self):
+        # Container Frame
+        container = ttk.Frame(self.root, padding=(20, 10))
+        container.grid(row=0, column=0, sticky="nsew")
+
+        # Title Label
+        title_label = ttk.Label(container, text="Secure Password Generator", font=("Helvetica", 16, "bold"))
+        title_label.grid(row=0, column=0, columnspan=2, pady=10)
+
+        # Length Label and Entry
+        length_label = ttk.Label(container, text="Password Length:")
+        length_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+
+        length_entry = ttk.Entry(container, textvariable=self.length_var, width=5)
+        length_entry.grid(row=1, column=1, padx=5, pady=5, sticky="w")
 
         # Character options Checkbuttons
-        upper_check = ttk.Checkbutton(self.root, text="Uppercase", variable=self.upper_var)
-        upper_check.grid(row=1, column=0, padx=10, pady=5, sticky="w")
+        upper_check = ttk.Checkbutton(container, text="Uppercase", variable=self.upper_var)
+        upper_check.grid(row=2, column=0, padx=5, pady=5, sticky="w")
 
-        lower_check = ttk.Checkbutton(self.root, text="Lowercase", variable=self.lower_var)
-        lower_check.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+        lower_check = ttk.Checkbutton(container, text="Lowercase", variable=self.lower_var)
+        lower_check.grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
-        digit_check = ttk.Checkbutton(self.root, text="Digits", variable=self.digit_var)
-        digit_check.grid(row=2, column=0, padx=10, pady=5, sticky="w")
+        digit_check = ttk.Checkbutton(container, text="Digits", variable=self.digit_var)
+        digit_check.grid(row=3, column=0, padx=5, pady=5, sticky="w")
 
-        special_check = ttk.Checkbutton(self.root, text="Special Characters", variable=self.special_var)
-        special_check.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+        special_check = ttk.Checkbutton(container, text="Special Characters", variable=self.special_var)
+        special_check.grid(row=3, column=1, padx=5, pady=5, sticky="w")
 
-        # Generate Button
-        generate_button = ttk.Button(self.root, text="Generate Password", command=self.generate_password)
-        generate_button.grid(row=3, column=0, columnspan=2, pady=10)
+        # Generate Button with Tooltip
+        generate_button = ttk.Button(container, text="Generate Password", command=self.generate_password)
+        generate_button.grid(row=4, column=0, columnspan=2, pady=10)
+        self.add_tooltip(generate_button, "Click to generate a secure password")
 
-        # Display Label
+        # Password Entry Field
+        password_entry = ttk.Entry(container, show="", state="readonly", font=("Courier", 12))
+        password_entry.grid(row=5, column=0, columnspan=2, pady=10, padx=5, sticky="we")
         self.password_var = tk.StringVar()
-        password_label = ttk.Label(self.root, textvariable=self.password_var)
-        password_label.grid(row=4, column=0, columnspan=2, pady=5)
-        # entropy checker ;0
+        password_entry["textvariable"] = self.password_var
+
+
+        # Display Label for Entropy
         self.entropy_var = tk.StringVar()
-        entropy_label = ttk.Label(self.root, textvariable=self.entropy_var)
-        entropy_label.grid(row=5, column=0, columnspan=2, pady=5)
+        entropy_label = ttk.Label(container, textvariable=self.entropy_var, foreground="gray")
+        entropy_label.grid(row=6, column=0, columnspan=2, pady=5)
 
     def generate_password(self):
         selected_chars = ""
@@ -72,6 +96,34 @@ class PasswordGeneratorApp:
 
         password = ''.join(secrets.choice(selected_chars) for _ in range(self.length_var.get()))
         self.password_var.set(password)
+
+    def add_tooltip(self, widget, text):
+        # Function to add tooltips to widgets
+        widget.bind("<Enter>", lambda event: self.show_tooltip(text))
+        widget.bind("<Leave>", lambda event: self.hide_tooltip())
+
+    def show_tooltip(self, text):
+        # Function to show tooltip
+        if not self.tooltip:
+            geometry_str = self.root.geometry()
+            geometry_values = geometry_str.split("+")
+            
+            if len(geometry_values) >= 2:
+                x = int(geometry_values[1]) + 10
+                y = int(geometry_values[2]) + 10
+                self.tooltip = tk.Toplevel(self.root, bd=1, relief=tk.SOLID)
+                self.tooltip.wm_overrideredirect(True)
+                self.tooltip.wm_geometry(f"+{x}+{y}")
+                label = tk.Label(self.tooltip, text=text, justify='left',
+                                 background="#ffffe0", relief='solid', borderwidth=1,
+                                 font=("Helvetica", "8", "normal"))
+                label.pack()
+
+    def hide_tooltip(self):
+        # Function to hide tooltip
+        if self.tooltip:
+            self.tooltip.destroy()
+            self.tooltip = None  # Reset tooltip to None after destroying
 
 if __name__ == "__main__":
     root = tk.Tk()
